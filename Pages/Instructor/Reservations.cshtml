@@ -1,0 +1,209 @@
+﻿@page
+@model Ceng382ClassroomReservation.Pages.Instructor.ReservationsModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "My Reservations";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+
+<div class="container my-4">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success text-center">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <!-- TAKVİM -->
+    <div class="card shadow-sm rounded-4 mb-4 p-3">
+        <h4 class="fw-bold mb-3 text-primary">📅 My Reservation Calendar</h4>
+        <div id="calendar"></div>
+    </div>
+
+    <!-- REZERVASYON FORMU -->
+    <div class="card shadow-sm rounded-4 mb-5 p-4">
+        <h4 class="fw-bold text-success mb-3">📝 Request a Classroom</h4>
+
+        @if (TempData["HolidayWarning"] != null)
+        {
+            <div class="alert alert-warning text-center">
+                @TempData["HolidayWarning"]
+            </div>
+        }
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        <form method="post">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Classroom</label>
+                    <select class="form-select" name="NewReservation.ClassroomId"
+                            asp-items="@(new SelectList(Model.ClassroomList, "Id", "Name"))"></select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Term</label>
+                    <select class="form-select" name="NewReservation.TermId"
+                            asp-items="@(new SelectList(Model.TermList, "Id", "Name"))"></select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Reservation Type</label>
+                    <select name="NewReservation.ReservationType" class="form-select" id="reservationTypeSelect" onchange="updateFieldVisibility()">
+                        <option value="Weekly">Weekly (Seasonal)</option>
+                        <option value="Single">Single (One-time)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6" id="weekly-dayofweek-section">
+                    <label class="form-label fw-semibold">Day of Week (1=Mon...7=Sun)</label>
+                    <input name="NewReservation.DayOfWeek" class="form-control" type="number" min="1" max="7" />
+                </div>
+                <div class="col-md-6" id="single-date-section" style="display:none;">
+                    <label class="form-label fw-semibold">Date</label>
+                    <input name="NewReservation.Date" class="form-control" type="date"
+                           value="@(Model.NewReservation.Date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))" />
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Start Time</label>
+                    <input name="NewReservation.StartTime" class="form-control" type="time"
+                           value="@Model.NewReservation.StartTime.ToString(@"hh\:mm")" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">End Time</label>
+                    <input name="NewReservation.EndTime" class="form-control" type="time"
+                           value="@Model.NewReservation.EndTime.ToString(@"hh\:mm")" />
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary fw-semibold px-4 shadow-sm">Submit Reservation</button>
+        </form>
+    </div>
+
+    <!-- REZERVASYON TABLOSU -->
+    <div class="card shadow-sm rounded-4 p-4">
+        <h4 class="fw-bold text-dark mb-3">📋 My Reservations</h4>
+
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Classroom</th>
+                    <th>Term</th>
+                    <th>Day</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var res in Model.MyReservations)
+                {
+                    var statusClass = res.Status switch
+                    {
+                        "Approved" => "table-success",
+                        "Rejected" => "table-danger",
+                        _ => "table-warning"
+                    };
+
+                    <tr class="@statusClass">
+                        <td>@res.Classroom.Name</td>
+                        <td>@res.Term.Name</td>
+                        <td>@(res.ReservationType == "Single" ? res.Date?.ToString("dd.MM.yyyy") : $"Day {res.DayOfWeek}")</td>
+                        <td>@res.StartTime</td>
+                        <td>@res.EndTime</td>
+                        <td><strong>@res.Status</strong></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+    <script>
+        function updateFieldVisibility() {
+            const type = document.getElementById("reservationTypeSelect").value;
+            document.getElementById("single-date-section").style.display = (type === "Single") ? "block" : "none";
+            document.getElementById("weekly-dayofweek-section").style.display = (type === "Weekly") ? "block" : "none";
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            updateFieldVisibility();
+
+            var calendarEl = document.getElementById('calendar');
+            if (!calendarEl) return;
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                firstDay: 1,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                events: [
+                    @foreach (var day in Model.Holidays)
+                    {
+                        <text>
+                        {
+                            start: '@day.ToString("yyyy-MM-dd")',
+                            display: 'background',
+                            color: '#ffd6d6'
+                        },
+                        </text>
+                    }
+
+                    @foreach (var res in Model.MyReservations)
+                    {
+                        var startStr = $"{res.StartTime:hh\\:mm}";
+                        var endStr = $"{res.EndTime:hh\\:mm}";
+                        var title = $"{startStr} - {endStr} {res.Classroom.Name}";
+
+                        if (res.ReservationType == "Single" && res.Date.HasValue)
+                        {
+                            <text>
+                            {
+                                title: '@title',
+                                start: '@res.Date?.ToString("yyyy-MM-dd")T@($"{res.StartTime:hh\\:mm}")',
+                                end: '@res.Date?.ToString("yyyy-MM-dd")T@($"{res.EndTime:hh\\:mm}")',
+                                color: '@(res.Status == "Approved" ? "#28a745" : res.Status == "Rejected" ? "#dc3545" : "#ffc107")'
+                            },
+                            </text>
+                        }
+                        else
+                        {
+                            <text>
+                            {
+                                title: '@title',
+                                startRecur: '@res.Term.StartDate.ToString("yyyy-MM-dd")',
+                                endRecur: '@res.Term.EndDate.AddDays(1).ToString("yyyy-MM-dd")',
+                                daysOfWeek: [@res.DayOfWeek],
+                                startTime: '@($"{res.StartTime:hh\\:mm}")',
+                                endTime: '@($"{res.EndTime:hh\\:mm}")',
+                                color: '@(res.Status == "Approved" ? "#28a745" : res.Status == "Rejected" ? "#dc3545" : "#ffc107")'
+                            },
+                            </text>
+                        }
+                    }
+                ]
+            });
+
+            calendar.render();
+        });
+    </script>
+}

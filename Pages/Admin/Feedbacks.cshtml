@@ -1,0 +1,55 @@
+﻿@page
+@model Ceng382ClassroomReservation.Pages.Admin.FeedbacksModel
+@{
+    ViewData["Title"] = "Feedback Messages";
+}
+
+<div class="container my-5">
+    <h2 class="mb-4 fw-bold text-primary">📬 User Feedback</h2>
+
+    @if (Model.FeedbackList.Any())
+    {
+        <h5 class="text-muted mb-4">⭐ Average Rating: <strong>@Model.AverageRating.ToString("0.0") / 5</strong></h5>
+    }
+
+    @if (!Model.FeedbackList.Any())
+    {
+        <div class="alert alert-info text-center">
+            No feedback has been submitted yet.
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var fb in Model.FeedbackList)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm rounded-4 h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-2">
+                                <span class="badge bg-secondary">@fb.Category</span>
+                            </h5>
+                            <p class="card-text text-dark">
+                                @fb.Message
+                            </p>
+                            <div class="text-warning">
+                                @for (int i = 0; i < fb.Rating; i++)
+                                {
+                                    <span>&#9733;</span> <!-- ★ -->
+                                }
+                                @for (int i = fb.Rating; i < 5; i++)
+                                {
+                                    <span class="text-muted">&#9734;</span> <!-- ☆ -->
+                                }
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light d-flex justify-content-between small text-muted">
+                            <span>👤 @fb.Username</span>
+                            <span>@fb.CreatedAt.ToString("g")</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,95 @@
+﻿@page
+@model Ceng382ClassroomReservation.Pages.LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg rounded-4 p-4">
+                <h2 class="text-center fw-bold text-primary mb-4"> Login</h2>
+
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger text-center">
+                        @Model.ErrorMessage
+                    </div>
+                }
+
+                <form method="post">
+                    <div class="form-floating mb-3">
+                        <input asp-for="Username" class="form-control shadow-sm" id="inputUsername" placeholder="Username">
+                        <label for="inputUsername" class="text-muted"> Username</label>
+                        <span asp-validation-for="Username" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <input asp-for="Password" class="form-control shadow-sm" type="password" id="inputPassword" placeholder="Password">
+                        <label for="inputPassword" class="text-muted"> Password</label>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+                        Log In
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEEDBACK SECTION -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8">
+            <div class="card p-4 shadow-sm rounded-4">
+                <h4 class="fw-bold mb-3 text-success">📬 Contact Us</h4>
+
+                <div class="btn-group mb-3" role="group">
+                    <button type="button" class="btn btn-outline-primary" onclick="showForm('Feedback')">Feedback</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="showForm('Support')">Support Request</button>
+                    <button type="button" class="btn btn-outline-danger" onclick="showForm('Bug')">Bug Report</button>
+                </div>
+
+                <form method="post" asp-page-handler="SendFeedback" id="feedbackForm" style="display:none;">
+                    <div class="mb-3">
+                    <label class="form-label">Rating (1–5)</label>
+                    <select class="form-select" name="Rating" required>
+                        <option value="5">⭐⭐⭐⭐⭐</option>
+                        <option value="4">⭐⭐⭐⭐</option>
+                        <option value="3">⭐⭐⭐</option>
+                        <option value="2">⭐⭐</option>
+                        <option value="1">⭐</option>
+                    </select>
+                </div>
+
+                    <input type="hidden" name="Category" id="categoryInput" value="" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark">Your Message</label>
+                        <textarea class="form-control" name="Message" rows="4" required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success fw-semibold px-4">
+                        Submit
+                    </button>
+                </form>
+
+                @if (TempData["FeedbackSuccess"] != null)
+                {
+                    <div class="alert alert-success mt-3">
+                        @TempData["FeedbackSuccess"]
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showForm(category) {
+            document.getElementById('feedbackForm').style.display = 'block';
+            document.getElementById('categoryInput').value = category;
+        }
+    </script>
+}

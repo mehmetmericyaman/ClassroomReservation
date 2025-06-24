@@ -1,0 +1,51 @@
+@page
+@model Ceng382ClassroomReservation.Pages.Admin.UsersModel
+@{
+    ViewData["Title"] = "Manage Instructors";
+}
+
+<div class="container mt-4">
+    <h2>👥 Instructor Account Management</h2>
+
+    <hr />
+    <h4>Add New Instructor</h4>
+    <form method="post" asp-page-handler="Add">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label">Username</label>
+                <input asp-for="Input.Username" class="form-control" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Password</label>
+                <input asp-for="Input.Password" class="form-control" required />
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success">Add Instructor</button>
+    </form>
+
+    <hr />
+    <h4 class="mt-4">Existing Instructors</h4>
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var user in Model.InstructorList)
+        {
+            <tr>
+                <td>@user.Username</td>
+                <td>@user.Role</td>
+                <td>
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@user.Id" onsubmit="return confirm('Are you sure?');">
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

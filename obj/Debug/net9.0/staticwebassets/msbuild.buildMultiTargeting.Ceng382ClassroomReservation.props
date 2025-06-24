@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Ceng382ClassroomReservation.props" />
+</Project>

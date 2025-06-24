@@ -1,0 +1,138 @@
+﻿@page
+@model Ceng382ClassroomReservation.Pages.Admin.ManageReservationsModel
+@{
+    ViewData["Title"] = "Manage Reservations";
+}
+
+<!-- FULLCALENDAR CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+
+<div class="container my-4">
+
+    <!-- TAKVİM ALANI -->
+    <div class="card shadow-sm rounded-4 mb-4 p-3">
+        <h4 class="fw-bold text-primary mb-3">📅 Reservation Calendar</h4>
+        <div id="calendar"></div>
+    </div>
+
+    <!-- TABLO ALANI -->
+    <div class="card shadow-sm rounded-4 p-4">
+        <h4 class="fw-bold text-dark mb-3">📋 All Reservation Requests</h4>
+
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>User</th>
+                    <th>Classroom</th>
+                    <th>Term</th>
+                    <th>Day</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var res in Model.AllReservations)
+                {
+                    var statusClass = res.Status switch
+                    {
+                        "Approved" => "table-success",
+                        "Rejected" => "table-danger",
+                        _ => "table-warning"
+                    };
+
+                    <tr class="@statusClass">
+                        <td>@res.User.Username</td>
+                        <td>@res.Classroom.Name</td>
+                        <td>@res.Term.Name</td>
+                        <td>@(res.ReservationType == "Single" ? res.Date?.ToString("dd.MM.yyyy") : $"Day {res.DayOfWeek}")</td>
+                        <td>@res.StartTime</td>
+                        <td>@res.EndTime</td>
+                        <td><strong>@res.Status</strong></td>
+                        <td class="text-center">
+                            @if (res.Status == "Pending")
+                            {
+                                <form method="post" asp-page-handler="Approve" asp-route-id="@res.Id" class="d-inline">
+                                    <button class="btn btn-success btn-sm">Approve</button>
+                                </form>
+                                <form method="post" asp-page-handler="Reject" asp-route-id="@res.Id" class="d-inline">
+                                    <button class="btn btn-danger btn-sm">Reject</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+            if (!calendarEl) return;
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                firstDay: 1,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                events: [
+
+                    // Tatil Günleri
+                    @foreach (var day in Model.Holidays)
+                    {
+                        <text>
+                        {
+                            start: '@day.ToString("yyyy-MM-dd")',
+                            display: 'background',
+                            color: '#ffd6d6'
+                        },
+                        </text>
+                    }
+
+                    // Rezervasyonlar
+                    @foreach (var res in Model.AllReservations)
+                    {
+                        var label = $"{res.User.Username} - {res.Classroom.Name}";
+
+                        if (res.ReservationType == "Single" && res.Date.HasValue)
+                        {
+                            <text>
+                            {
+                                title: '@label',
+                                start: '@res.Date?.ToString("yyyy-MM-dd")T@($"{res.StartTime:hh\\:mm}")',
+                                end: '@res.Date?.ToString("yyyy-MM-dd")T@($"{res.EndTime:hh\\:mm}")',
+                                color: '@(res.Status == "Approved" ? "#28a745" : res.Status == "Rejected" ? "#dc3545" : "#ffc107")'
+                            },
+                            </text>
+                        }
+                        else
+                        {
+                            <text>
+                            {
+                                title: '@label',
+                                startRecur: '@res.Term.StartDate.ToString("yyyy-MM-dd")',
+                                endRecur: '@res.Term.EndDate.AddDays(1).ToString("yyyy-MM-dd")',
+                                daysOfWeek: [@res.DayOfWeek],
+                                startTime: '@($"{res.StartTime:hh\\:mm}")',
+                                endTime: '@($"{res.EndTime:hh\\:mm}")',
+                                color: '@(res.Status == "Approved" ? "#28a745" : res.Status == "Rejected" ? "#dc3545" : "#ffc107")'
+                            },
+                            </text>
+                        }
+                    }
+                ]
+            });
+
+            calendar.render();
+        });
+    </script>
+}

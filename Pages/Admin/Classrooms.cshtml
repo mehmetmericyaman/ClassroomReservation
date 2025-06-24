@@ -1,0 +1,48 @@
+﻿@page
+@model Ceng382ClassroomReservation.Pages.Admin.ClassroomsModel
+@{
+    ViewData["Title"] = "Manage Classrooms";
+}
+
+<div class="container mt-4">
+    <h2>Add New Classroom</h2>
+
+    <form method="post" asp-antiforgery="true">
+        <div class="mb-3">
+            <label class="form-label">Classroom Name</label>
+            <input asp-for="NewClassroom.Name" class="form-control" />
+            <span class="text-danger" asp-validation-for="NewClassroom.Name"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Capacity</label>
+            <input asp-for="NewClassroom.Capacity" type="number" class="form-control" />
+            <span class="text-danger" asp-validation-for="NewClassroom.Capacity"></span>
+        </div>
+        <button type="submit" class="btn btn-success">Add Classroom</button>
+    </form>
+
+    <hr />
+
+    <h3>Existing Classrooms</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Classroom Name</th>
+                <th>Capacity</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var room in Model.ClassroomList)
+        {
+            <tr>
+                <td>@room.Name</td>
+                <td>@room.Capacity</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,50 @@
+﻿@page
+@model Ceng382ClassroomReservation.Pages.Admin.TermsModel
+@{
+    ViewData["Title"] = "Manage Terms";
+}
+
+<div class="container mt-4">
+    <h2>Add New Term</h2>
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">Term Name</label>
+            <input asp-for="NewTerm.Name" class="form-control" />
+            <span class="text-danger" asp-validation-for="NewTerm.Name"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Start Date</label>
+            <input asp-for="NewTerm.StartDate" type="date" class="form-control" />
+            <span class="text-danger" asp-validation-for="NewTerm.StartDate"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">End Date</label>
+            <input asp-for="NewTerm.EndDate" type="date" class="form-control" />
+            <span class="text-danger" asp-validation-for="NewTerm.EndDate"></span>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Term</button>
+    </form>
+
+    <hr />
+
+    <h3>Existing Terms</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Term Name</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var term in Model.TermList)
+        {
+            <tr>
+                <td>@term.Name</td>
+                <td>@term.StartDate.ToShortDateString()</td>
+                <td>@term.EndDate.ToShortDateString()</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
